@@ -1,11 +1,17 @@
 (() => {
   // ====== 設定 ======
-  const CREAM = "rgb(255, 243, 214)"; // #FFF3D6
-  const BLACK = "rgb(18, 18, 18)";    // 真っ黒より少し柔らかい黒
+  let CREAM = "rgb(255, 243, 214)"; // #FFF3D6
+  let BLACK = "rgb(18, 18, 18)";    // 真っ黒より少し柔らかい黒
+const DARK_PAGE_THRESHOLD = 255 - 80;
   const THRESHOLD = 160;              // 0-255: これ以上を「薄い=クリーム」、未満を「濃い=黒」
   const ALPHA_MIN = 0.12;             // 透明すぎる色は無視
   const MAX_NODES_PER_TICK = 500;     // 負荷対策（1フレームあたり処理上限）
   const OBSERVE_MUTATIONS = true;
+
+  if(isDarkThemePage()) {
+  CREAM = "rgb(18, 18, 18)";
+  BLACK = "rgb(255, 243, 214)";
+  }
 
   // 変換対象の CSS プロパティ（“単色”になりやすいもの）
   const COLOR_PROPS = [
@@ -49,6 +55,40 @@
     if (a < ALPHA_MIN) return null;
 
     return { r, g, b, a };
+  }
+
+  function parseRgb(str) {
+    if (!str) return null;
+    const s = str.trim().toLowerCase();
+    if (s === "transparent") return null;
+
+    const m = s.match(
+      /^rgba?\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)(?:\s*,\s*([0-9.]+))?\s*\)$/
+    );
+    if (!m) return null;
+
+    const r = clamp255(m[1]);
+    const g = clamp255(m[2]);
+    const b = clamp255(m[3]);
+    const a = m[4] == null ? 1 : clamp01(m[4]);
+    if (a < ALPHA_MIN) return null;
+
+    return { r, g, b };
+  }
+
+  // ====== ★ 追加：ダークテーマ判定 ======
+  function isDarkThemePage() {
+    const bodyBg = getComputedStyle(document.body).backgroundColor;
+    const htmlBg = getComputedStyle(document.documentElement).backgroundColor;
+
+    const c1 = parseRgb(bodyBg);
+    const c2 = parseRgb(htmlBg);
+
+    const candidates = [c1, c2].filter(Boolean);
+    if (candidates.length === 0) return false;
+
+    // どちらかが十分暗ければ「ダークテーマ」
+    return candidates.some(c => luma(c) > DARK_PAGE_THRESHOLD);
   }
 
   function clamp255(n) {
