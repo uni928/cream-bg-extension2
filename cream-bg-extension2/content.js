@@ -2,7 +2,7 @@
   // ====== 設定 ======
   let CREAM = "rgb(255, 243, 214)"; // #FFF3D6
   let BLACK = "rgb(18, 18, 18)";    // 真っ黒より少し柔らかい黒
-const DARK_PAGE_THRESHOLD = 255 - 80;
+const DARK_PAGE_THRESHOLD = 80;
   const THRESHOLD = 160;              // 0-255: これ以上を「薄い=クリーム」、未満を「濃い=黒」
   const ALPHA_MIN = 0.12;             // 透明すぎる色は無視
   const MAX_NODES_PER_TICK = 500;     // 負荷対策（1フレームあたり処理上限）
@@ -76,20 +76,41 @@ const DARK_PAGE_THRESHOLD = 255 - 80;
     return { r, g, b };
   }
 
-  // ====== ★ 追加：ダークテーマ判定 ======
-  function isDarkThemePage() {
-    const bodyBg = getComputedStyle(document.body).backgroundColor;
-    const htmlBg = getComputedStyle(document.documentElement).backgroundColor;
+function isDarkThemePage() {
+  const bodyStyle = getComputedStyle(document.body);
+  const htmlStyle = getComputedStyle(document.documentElement);
 
-    const c1 = parseRgb(bodyBg);
-    const c2 = parseRgb(htmlBg);
+  const bodyBg = bodyStyle.backgroundColor;
+  const htmlBg = htmlStyle.backgroundColor;
 
-    const candidates = [c1, c2].filter(Boolean);
-    if (candidates.length === 0) return false;
+  const bodyColor = parseRgb(bodyBg);
+  const htmlColor = parseRgb(htmlBg);
 
-    // どちらかが十分暗ければ「ダークテーマ」
-    return candidates.some(c => luma(c) > DARK_PAGE_THRESHOLD);
+  // body に有効な背景色がある場合は body を最優先
+  if (bodyColor) {
+    return luma(bodyColor) < DARK_PAGE_THRESHOLD;
   }
+
+  // body が透明 / 未指定の場合のみ html を見る
+  if (!bodyColor && htmlColor) {
+    return luma(htmlColor) < DARK_PAGE_THRESHOLD;
+  }
+
+  // 判定不能な場合はライト扱い（安全側）
+  return false;
+}
+
+  // ====== ★ 追加：window 枠（html/body）をクリーム色に固定 ======
+  document.documentElement.style.setProperty(
+    "background-color",
+    CREAM,
+    "important"
+  );
+  document.body.style.setProperty(
+    "background-color",
+    CREAM,
+    "important"
+  );
 
   function clamp255(n) {
     n = Number.isFinite(n) ? n : 0;
@@ -205,10 +226,28 @@ const DARK_PAGE_THRESHOLD = 255 - 80;
   // 初回：全走査
   scan();
 
+  // ====== ★ 追加：入場後5分間だけ、2秒おきに全体へ強制再適用 ======
+  const REPROCESS_INTERVAL_MS = 2000;
+  const REPROCESS_DURATION_MS = 5 * 60 * 1000;
+  const startedAt = Date.now();
+
+  const reprocessTimer = setInterval(() => {
+    if (Date.now() - startedAt >= REPROCESS_DURATION_MS) {
+      clearInterval(reprocessTimer);
+      return;
+    }
+    // force=true で touched を無視して再適用（全体の色変化/遅延描画対策）
+    scan();
+  }, REPROCESS_INTERVAL_MS);
+
   // SPA 対応：追加ノードだけ処理
   if (OBSERVE_MUTATIONS) {
     const mo = new MutationObserver((mutations) => {
       for (const m of mutations) {
+       if (m.type === "attributes") {
+          process(m.target, true);
+          continue;
+        }
         for (const n of m.addedNodes) {
           if (!(n instanceof Element)) continue;
 
@@ -226,7 +265,11 @@ const DARK_PAGE_THRESHOLD = 255 - 80;
       }
     });
 
-    mo.observe(document.documentElement, { childList: true, subtree: true });
+    mo.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class", "style"]
+    });
   }
 })();
-
