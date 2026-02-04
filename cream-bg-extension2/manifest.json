@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Cream & Black Two-Tone",
+  "version": "2.0.0",
+  "description": "単色の色情報をすべて「クリーム or 黒」に2値化します（薄い=クリーム / 濃い=黒）。",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ]
+}
