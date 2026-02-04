@@ -9,8 +9,8 @@ const DARK_PAGE_THRESHOLD = 255 - 80;
   const OBSERVE_MUTATIONS = true;
 
   if(isDarkThemePage()) {
-  CREAM = "rgb(18, 18, 18)";
-  BLACK = "rgb(255, 243, 214)";
+  //CREAM = "rgb(18, 18, 18)";
+  //BLACK = "rgb(255, 243, 214)";
   }
 
   // 変換対象の CSS プロパティ（“単色”になりやすいもの）
@@ -229,3 +229,4 @@ const DARK_PAGE_THRESHOLD = 255 - 80;
     mo.observe(document.documentElement, { childList: true, subtree: true });
   }
 })();
+
