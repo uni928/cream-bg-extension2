@@ -1,4 +1,10 @@
 (() => {
+
+    // ====== ★ 追加：ローカルファイル（C:/ D:/）は対象外 ======
+  if (location.protocol === "file:") {
+    //return;
+  }
+
   // ====== 設定 ======
   let CREAM = "rgb(255, 243, 214)"; // #FFF3D6
   let BLACK = "rgb(18, 18, 18)";    // 真っ黒より少し柔らかい黒
@@ -273,3 +279,4 @@ function isDarkThemePage() {
     });
   }
 })();
+
