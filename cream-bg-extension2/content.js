@@ -12,7 +12,7 @@ const DARK_PAGE_THRESHOLD = 80;
   const THRESHOLD = 160;              // 0-255: これ以上を「薄い=クリーム」、未満を「濃い=黒」
   const ALPHA_MIN = 0.12;             // 透明すぎる色は無視
   const MAX_NODES_PER_TICK = 500;     // 負荷対策（1フレームあたり処理上限）
-  const OBSERVE_MUTATIONS = true;
+  const OBSERVE_MUTATIONS = false;
 
   if(isDarkThemePage()) {
   //CREAM = "rgb(18, 18, 18)";
@@ -279,4 +279,5 @@ function isDarkThemePage() {
     });
   }
 })();
+
 
