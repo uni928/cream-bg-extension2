@@ -251,7 +251,7 @@ function isDarkThemePage() {
     const mo = new MutationObserver((mutations) => {
       for (const m of mutations) {
        if (m.type === "attributes") {
-          process(m.target, true);
+          //process(m.target, true);
           continue;
         }
         for (const n of m.addedNodes) {
@@ -279,6 +279,7 @@ function isDarkThemePage() {
     });
   }
 })();
+
 
 
 
