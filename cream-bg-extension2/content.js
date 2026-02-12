@@ -232,8 +232,8 @@ function isDarkThemePage() {
   // 初回：全走査
   scan();
 
-  // ====== ★ 追加：入場後5分間だけ、2秒おきに全体へ強制再適用 ======
-  const REPROCESS_INTERVAL_MS = 2000;
+  // ====== ★ 追加：入場後5分間だけ、3秒おきに全体へ強制再適用 ======
+  const REPROCESS_INTERVAL_MS = 3000;
   const REPROCESS_DURATION_MS = 5 * 60 * 1000;
   const startedAt = Date.now();
 
@@ -279,6 +279,7 @@ function isDarkThemePage() {
     });
   }
 })();
+
 
 
 
